@@ -193,4 +193,76 @@ export default function GymTrackerApp() {
                   <div className="col-span-3 text-center">kg</div>
                   <div className="col-span-3 text-center">Reps</div>
                   <div className="col-span-3 text-center">RPE</div>
-                  <div class
+                  <div className="col-span-2 text-center">Done</div>
+                </div>
+                {exercise.sets.map((set, setIndex) => (
+                  <div key={setIndex} className={`grid grid-cols-12 gap-2 items-center mb-2 ${set.completed ? 'opacity-50' : ''}`}>
+                    <div className="col-span-1 text-center text-sm text-gray-400">{setIndex + 1}</div>
+                    <div className="col-span-3">
+                      <input type="number" value={set.weight} onChange={(e) => updateSet(exIndex, setIndex, 'weight', e.target.value)} className="w-full bg-black border border-gray-700 rounded-lg p-2 text-center text-white focus:border-blue-500 outline-none" placeholder="--" />
+                    </div>
+                    <div className="col-span-3">
+                      <input type="number" value={set.reps} onChange={(e) => updateSet(exIndex, setIndex, 'reps', e.target.value)} className="w-full bg-black border border-gray-700 rounded-lg p-2 text-center text-white focus:border-blue-500 outline-none" placeholder="--" />
+                    </div>
+                    <div className="col-span-3">
+                      <input type="number" value={set.rpe} onChange={(e) => updateSet(exIndex, setIndex, 'rpe', e.target.value)} className="w-full bg-black border border-gray-700 rounded-lg p-2 text-center text-orange-400 focus:border-orange-500 outline-none" placeholder="--" />
+                    </div>
+                    <button onClick={() => completeSet(exIndex, setIndex)} className={`col-span-2 flex justify-center items-center p-2 rounded-lg ${set.completed ? 'bg-green-500/20 text-green-500' : 'bg-gray-800 text-gray-400'}`}>
+                      <CheckCircle size={20} />
+                    </button>
+                  </div>
+                ))}
+                <button onClick={() => addSet(exIndex)} className="w-full mt-3 py-2 text-sm text-blue-400 bg-blue-500/10 rounded-lg font-medium">+ Add Set</button>
+              </div>
+            ))}
+            <button onClick={finishWorkout} className="w-full bg-blue-600 text-white font-bold text-lg py-4 rounded-2xl active:scale-95 transition-transform mt-8 mb-4 shadow-lg shadow-blue-500/20">Finish Workout</button>
+          </div>
+        )}
+
+        {activeTab === 'progress' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white">Progress & Data</h2>
+              <button onClick={exportData} className="flex items-center gap-2 text-sm bg-gray-900 border border-gray-700 px-3 py-1.5 rounded-lg text-gray-300"><Download size={16} /> Export</button>
+            </div>
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-4 h-64">
+              <h3 className="text-sm font-semibold text-gray-400 mb-4">Volume Overview (Last workouts)</h3>
+              {history.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-gray-600 text-sm">No data yet. Complete a workout!</div>
+              ) : (
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={history.slice(-10).map((h) => ({ name: h.routine, volume: h.exercises.reduce((acc, ex) => acc + ex.sets.reduce((sAcc, set) => sAcc + (Number(set.weight||0) * Number(set.reps||0)), 0), 0) }))}>
+                    <XAxis dataKey="name" stroke="#4B5563" fontSize={12} />
+                    <Tooltip cursor={{fill: '#1F2937'}} contentStyle={{backgroundColor: '#000', border: '1px solid #374151', borderRadius: '8px'}} />
+                    <Bar dataKey="volume" fill="#3B82F6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {restTimer > 0 && (
+        <div className="fixed bottom-24 left-4 right-4 bg-gray-900 border border-blue-500/30 rounded-2xl p-4 shadow-2xl flex justify-between items-center z-20">
+          <div className="flex items-center gap-3">
+            <span className="text-blue-400 font-bold text-xl">{restTimer}s</span>
+            <span className="text-white font-medium">Resting...</span>
+          </div>
+          <button onClick={() => setRestTimer(0)} className="text-gray-400 bg-black px-3 py-1.5 rounded-lg text-sm">Skip</button>
+        </div>
+      )}
+
+      <nav className="fixed bottom-0 w-full bg-black/90 backdrop-blur-md border-t border-gray-900 z-10">
+        <div className="flex justify-around p-3">
+          <button onClick={() => setActiveTab('workout')} className={`flex flex-col items-center gap-1 ${activeTab === 'workout' ? 'text-blue-500' : 'text-gray-500'}`}>
+            <Activity size={24} /><span className="text-[10px] font-medium">Workout</span>
+          </button>
+          <button onClick={() => setActiveTab('progress')} className={`flex flex-col items-center gap-1 ${activeTab === 'progress' ? 'text-blue-500' : 'text-gray-500'}`}>
+            <BarChart2 size={24} /><span className="text-[10px] font-medium">Progress</span>
+          </button>
+        </div>
+      </nav>
+    </div>
+  );
+}
